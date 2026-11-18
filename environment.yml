@@ -1,0 +1,18 @@
+# Środowisko conda — styl wspólny z crnn-ocr (+ torch dla dyfuzora).
+# TODO (D0): dociągnij wersje pytorch/cuda zgodne z crnn-ocr po pierwszych
+# uruchomieniach; na CPU usuń linię pytorch-cuda.
+name: unet_diffusion_ocr
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - pytorch
+  - pytorch-cuda=12.4
+  - numpy
+  - pillow
+  - pyyaml
+  - tensorboard
+  - tqdm

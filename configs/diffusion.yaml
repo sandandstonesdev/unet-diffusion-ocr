@@ -1,0 +1,17 @@
+# U-Net dyfuzyjny (D-tor) — hiperparametry dyfuzora
+# Styl identyczny jak crnn-ocr/configs — jedno źródło prawdy.
+#
+# TODO (D0/D1):
+#   seed: 42
+#   paths:        # dane pobierane osobno (snapshot_download):
+#                 #   data/raw/train/     — ocr-pl-lines train (te same pliki
+#                 #                         co crnn-ocr/data/raw/train)
+#                 #   data/raw/val/       — ocr-pl-lines val (eval po degradacjach G/R)
+#                 #   data/raw/ehri-test/  — ehri-pl-lines test (81 realnych linii;
+#                 #                         ortografia historyczna → przed ΔCER
+#                 #                         filtr charset 84 klas crnn-ocr)
+#   unet:         # 3 piętra, base 32, GroupNorm(8)+SiLU, sinusoidalny embedding t
+#   diffusion:    # T=300, harmonogram cosinusowy, buckety szerokości, siatka t_degr
+#   train:        # lr=2e-4, batch, kroki, EMA
+#   restore:      # DDIM od t0 (siatka {0.2, 0.3, 0.5, 0.7}), brama/skip
+#   checkpoint:   # checkpoints/diffusion/diffusion_best.pt (+ EMA)

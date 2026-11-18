@@ -1,0 +1,43 @@
+# --- Conda ---
+.conda/
+conda-meta/
+*.conda
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# --- Danych NIE commitujemy ---
+data/raw/
+data/restored/
+data/cache/
+*.parquet
+*.arrow
+*.lock
+hf_cache/
+
+# --- Trening / artefakty ---
+# logi TensorBoard
+runs/
+checkpoints/
+*.pt
+*.pth
+*.onnx
+wandb/
+
+# --- Notatniki ---
+.ipynb_checkpoints/
+
+# --- Środowisko / IDE ---
+.env
+.vscode/
+.idea/
+
+# --- OS ---
+Thumbs.db
+Desktop.ini
+.DS_Store

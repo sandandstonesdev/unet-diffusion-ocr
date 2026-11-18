@@ -1,0 +1,16 @@
+# U-Net detekcyjny (S-tor) — hiperparametry detektora
+# Styl identyczny jak crnn-ocr/configs — jedno źródło prawdy.
+#
+# TODO (S1):
+#   seed: 42
+#   paths:        # dane (styl crnn-ocr: trening / ewaluacja / test):
+#                 #   train     — strony renderowane w S0 z linii data/raw/train
+#                 #               (maski GT generują się automatycznie przy renderze)
+#                 #   eval      — strony renderowane z linii data/raw/val
+#                 #               (kompozycja niedostępna w treningu)
+#                 #   test real — ehri-pl-lines (data/raw/ehri-test; bboxy
+#                 #               vs kilkanaście ręcznych anotacji)
+#   unet:         # 3 piętra, base 32, GroupNorm(8)+SiLU, bez warunkowania t
+#   loss:         # BCE + Dice na maskach
+#   train:        # lr, batch, kroki (overfit-check na 1 batchu)
+#   checkpoint:   # checkpoints/detect/detect_best.pt

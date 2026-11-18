@@ -1,0 +1,3 @@
+# Konwencja repo: LF w repo i w working copy (styl wspólny z crnn-ocr).
+# text=auto: pliki binarne (obrazy, *.pt) git wykryje i zostawi nietknięte.
+* text=auto eol=lf
