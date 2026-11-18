@@ -183,7 +183,7 @@ historycznie wrażliwy, używany wyłącznie do badań OCR/HTR, nie jest redystr
 
   * Kacper Wikieł [@kwikiel](https://github.com/kwikiel/)
 
-  * Arkadiusz Słota [@Maggio333(https://github.com/Maggio333)]
+  * Arkadiusz Słota [@Maggio333](https://github.com/Maggio333)
 
   * **Piotr Styla** [@PiotrStyla](https://github.com/PiotrStyla/) — [zbiór linii treningowych](https://huggingface.co/datasets/PiotrSty/ocr-pl-lines) oraz [ehri-pl-lines](https://huggingface.co/datasets/PiotrSty/ehri-pl-lines)
 
