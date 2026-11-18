@@ -5,7 +5,7 @@
 U-Net detekcyjny (podział skanu na linie) + dewarp + dyfuzyjny restaurator linii (SDEdit).
 **Zakres: od skanu do naprawionego obrazka linii** 
 
-[crnn-ocr](https://github.com/slayerlabs/crnn-ocr) daje cały pipeline do tekstu:
+[crnn-ocr](https://github.com/sandandstonesdev/crnn-ocr) daje cały pipeline do tekstu:
 
 ```
 skan → detekcja (U-Net linii) → dewarp → linia (1, 32, W) [0,1]
@@ -181,7 +181,9 @@ historycznie wrażliwy, używany wyłącznie do badań OCR/HTR, nie jest redystr
 
 * Szczególne podziękowania za nieocenione zasoby, kod i mocne wsparcie w nauce:
 
-  * Kacper Wikieł [@kwikiel](https://github.com/kwikiel/) — [CRNN-ocr](https://github.com/slayerlabs/crnn-ocr) (konsument kontraktów, miary ΔCER)
+  * Kacper Wikieł [@kwikiel](https://github.com/kwikiel/)
+
+  * Arkadiusz Słota [@Maggio333(https://github.com/Maggio333)]
 
   * **Piotr Styla** [@PiotrStyla](https://github.com/PiotrStyla/) — [zbiór linii treningowych](https://huggingface.co/datasets/PiotrSty/ocr-pl-lines) oraz [ehri-pl-lines](https://huggingface.co/datasets/PiotrSty/ehri-pl-lines)
 
