@@ -30,6 +30,7 @@ checkpoints/
 wandb/
 
 # --- Notatniki ---
+notebooks/
 .ipynb_checkpoints/
 
 # --- Środowisko / IDE ---

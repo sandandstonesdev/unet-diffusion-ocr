@@ -2,7 +2,6 @@
 
 Wzór resize'u z LineDataset (crnn-ocr), prostowanie wg baselines."""
 
-import torch
 from torch import Tensor
 
 from .detect import DetectedLine

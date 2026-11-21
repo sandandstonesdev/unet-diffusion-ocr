@@ -16,3 +16,6 @@ dependencies:
   - pyyaml
   - tensorboard
   - tqdm
+  - ruff
+  - pytest
+  - matplotlib
