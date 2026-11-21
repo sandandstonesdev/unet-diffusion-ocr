@@ -5,21 +5,32 @@
 U-Net detekcyjny (podział skanu na linie) + dewarp + dyfuzyjny restaurator linii (SDEdit).
 **Zakres: od skanu do naprawionego obrazka linii** 
 
-[crnn-ocr](https://github.com/sandandstonesdev/crnn-ocr) daje cały pipeline do tekstu:
+CRNN to osobne repo ([crnn-ocr](https://github.com/sandandstonesdev/crnn-ocr)) —
+konsumuje nasz wynik 1:1, bez zmian w swoim loaderze. Flow nasz (z granicą
+repo na końcu):
 
 ```
-skan → detekcja (U-Net linii) → dewarp → linia (1, 32, W) [0,1]
-                                             │
-                                             ▼
-                                 [DYFUZOR: restauracja SDEdit]
-                                             │
-                                             ▼
-                                          CRNN → tekst          (crnn-ocr)
+SKAN STRONY
+   │
+   ▼
+[TOR S]        "gdzie jest linia?"          (segmentacja sieciowa)
+   │  DetectedLine: image, bbox, baselines, score, truncated
+   ▼
+[MODEL-FREE]   "wyprostuj i znormalizuj"    (zwykły kod, zero uczenia)
+   │  dewarp → (1, 32, W) float32 [0,1]
+   ▼
+[TOR D]        "wyczyść piksele"            (dyfuzor, OPCJONALNY, z bramą skip)
+   │  restore() — ta sama W, ten sam baseline
+   ▼
+ WYJŚCIE REPO: linia (1, 32, W) float32 [0,1] — kontrakt styku
+──────────────────── granica repo ────────────────────
+[CRNN]         "przeczytaj linijkę"         (CTC → tekst, 84 klasy NFC)
 ```
 
-**Status: WIP** — gotowe: struktura repo + kontrakty modułów (ten plik).
-W trakcie: adapter danych + degradacje (D0). Planowane: trening dyfuzora (D1),
-pętla `restore()` (D2), ewaluacja ΔCER (D3), detekcja (S0–S2).
+**Status: WIP** — gotowe: kontrakty (`docs/contracts.md`) + harmonogram
+(`configs/schedule.py` z testami) + loader linii (`data/line_dataset.py` z testami).
+W trakcie: degradacje G/R (D0). Planowane: trening dyfuzora (D1), pętla
+`restore()` (D2), ewaluacja ΔCER (D3), detekcja (S0–S2).
 
 Dwa osobne modele, trenowane niezależnie (wspólna tylko klasa sieci `model/unet.py`):
 
@@ -41,17 +52,21 @@ unet-diffusion-ocr/
 │
 ├── README.md                  # ten plik
 ├── environment.yml            # specyfikacja środowiska conda
+├── ruff.toml                  # linter jak w crnn-ocr
 ├── .gitignore
+│
+├── docs/
+│   └── contracts.md           # umowa styków + tabela kontrakt→test→status
 │
 ├── configs/
 │   ├── detect.yaml            # hiperparametry detektora (S-tor)
 │   ├── diffusion.yaml         # hiperparametry dyfuzora (D-tor)
-│   └── schedule.py            # harmonogram cosinusowy + q_sample (tylko dyfuzor)
+│   └── schedule.py            # harmonogram cosinusowy + q_sample + t_frac_to_idx (tylko dyfuzor)
 │
 ├── data/
 │   ├── __init__.py
 │   ├── mask_dataset.py        # strony + maski bazowych linii (S0)
-│   ├── line_dataset.py        # czyste linie (1,32,W) [0,1] do treningu dyfuzora
+│   ├── line_dataset.py        # czyste linie (1,32,W) [0,1] do treningu dyfuzora (gotowe)
 │   ├── degrade.py             # G-degradacja (q_sample, siatka t_degr) + R-degradacje
 │   └── splitter_fallback.py   # v0: profilowanie rzędów (testy bez U-Net detekcyjnego)
 │
@@ -75,12 +90,15 @@ unet-diffusion-ocr/
 ├── runs/                      # logi TensorBoard (IGNOROWANE)
 ├── checkpoints/               # modele (IGNOROWANE): detect/, diffusion/
 ├── data/raw/                  # dane pobierane osobno (IGNOROWANE)
-└── tests/                     # testy kontraktów: kształt, [0,1], geometria baseline
+└── tests/                     # kontrakt→test→status (docs/contracts.md):
+                                 # test_schedule, test_line_dataset, test_contracts
 ```
 
 `data/raw/`, `runs/`, `checkpoints/` ignorowane przez git — dane i artefakty, nie kod.
 
 ## Kontrakty
+
+Pełna umowa styków z tabelą kontrakt→test→status: **`docs/contracts.md`**.
 
 Od dewarpu w prawo jedna konwencja: **[0,1] float32, H = 32** (dziedziczone z
 `data/dataset.py` w crnn-ocr — jedno źródło prawdy). Padding zerami z prawej robi
@@ -146,7 +164,9 @@ ocr-pl-lines — MIT.
 ```bash
 conda env create -f environment.yml
 conda activate unet_diffusion_ocr
-python -m tests.test_contracts    # sanity: kształty, [0,1], geometria baseline (od D0)
+python -m pytest tests/           # bramka: testy kontraktów (schedule, loader, styki, smoke)
+python -m tests.test_smoke        # flow na syntetycznej linii: in/out każdego etapu
+ruff check .                      # linter, konfiguracja jak w crnn-ocr
 ```
 
 ## Integracja z crnn-ocr
@@ -163,7 +183,7 @@ mapa 2D, kontrola halucynacji na liniach czystych, test realny na ehri-pl-lines)
 
 ## Licencja
 
-Kod projektu: licencja **MIT** — pełny tekst w [LICENSE](https://github.com/slayerlabs/crnn-ocr/blob/main/LICENSE).
+Kod projektu: licencja **MIT** — pełny tekst w [LICENSE](https://github.com/sandandstonesdev/crnn-ocr/blob/main/LICENSE).
 
 Dane (`data/raw/`) nie są częścią repozytorium. Zbiór [ocr-pl-lines](https://huggingface.co/datasets/PiotrSty/ocr-pl-lines)
 jest udostępniony na licencji **MIT** (zgodnie z kartą datasetu), więc publikacja
