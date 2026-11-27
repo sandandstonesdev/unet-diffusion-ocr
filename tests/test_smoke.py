@@ -5,8 +5,8 @@ Uruchomienie: python -m tests.test_smoke    (czytelny wydruk in/out każdego eta
 
 Zero zależności od data/raw — linia syntetyczna PIL-em (jak w notebookach).
 Mock = MECHANIKA, nie jakość: model dyfuzora to 2 conv-y, trening to 1 krok
-ε-prediction. Ten plik rośnie razem z pipeline: po D1 podmieniamy MockEps
-na model/unet.py, po D2 dochodzi restore(), po S2 dewarp().
+ε-prediction. Ten plik rośnie razem z pipeline: D0 wpięło degrade_g (sekcja 4),
+po D1 podmieniamy MockEps na model/unet.py, po D2 dochodzi restore(), po S2 dewarp().
 """
 import numpy as np
 import torch
@@ -15,6 +15,7 @@ import torch.nn.functional as F
 from PIL import Image, ImageDraw, ImageFont
 
 from configs.schedule import cosine_schedule, q_sample, t_frac_to_idx
+from data.degrade import degrade_g
 
 T = 300
 
@@ -88,14 +89,16 @@ def _flow(verbose):
     _p(verbose, "[3] konwersja do wnętrza dyfuzora: x0 = 2x - 1")
     _p(verbose, f"    in:  zakres=[{float(x0.min()):.2f}, {float(x0.max()):.2f}]")
 
-    # -- 4. degradacja G (docelowo: degrade_g z data/degrade.py) ------------
+    # -- 4. degradacja G (degrade_g z data/degrade.py; ε z zewnątrz) --------
     g = torch.Generator().manual_seed(42)
     t_idx = torch.tensor([t_frac_to_idx(0.5), t_frac_to_idx(0.35)])
-    eps = torch.randn(x0.shape, generator=g)
-    xt = q_sample(x0, t_idx, eps, acp)
-    deg = ((xt + 1) / 2).clamp(0, 1)                       # powrót do [0,1]
+    eps = torch.randn(x0.shape, generator=g)          # cel ε-prediction w [5]
+    xt = q_sample(x0, t_idx, eps, acp)                # para treningowa (x_t, ε)
+    deg = degrade_g(batch, t_frac=torch.tensor([0.5, 0.35]),
+                    schedule=sched, noise=eps)
+    assert torch.allclose(deg, ((xt + 1) / 2).clamp(0, 1))  # moduł == ręczna matematyka
     _p(verbose, "")
-    _p(verbose, "[4] degradacja G: q_sample(x0, t, eps, acp) — t=[0.5, 0.35]")
+    _p(verbose, "[4] degradacja G: degrade_g(batch, t=[0.5, 0.35], noise=ε)")
     _p(verbose, f"    out: kształt={tuple(deg.shape)}  "
                 f"zakres=[{float(deg.min()):.2f}, {float(deg.max()):.2f}]"
                 "  (clamp na brzegu)")

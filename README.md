@@ -28,8 +28,10 @@ SKAN STRONY
 ```
 
 **Status: WIP** — gotowe: kontrakty (`docs/contracts.md`) + harmonogram
-(`configs/schedule.py` z testami) + loader linii (`data/line_dataset.py` z testami).
-W trakcie: degradacje G/R (D0). Planowane: trening dyfuzora (D1), pętla
+(`configs/schedule.py` z testami) + loader linii (`data/line_dataset.py` z
+testami) + degradacje G/R (`data/degrade.py` z testami) + **bramka D0
+spełniona** (`make_d0_grid.py`: 200 próbek siatki t_degr; wpis:
+`docs/d0_grid.md`). W trakcie: trening dyfuzora (D1). Planowane: pętla
 `restore()` (D2), ewaluacja ΔCER (D3), detekcja (S0–S2).
 
 Dwa osobne modele, trenowane niezależnie (wspólna tylko klasa sieci `model/unet.py`):
@@ -56,7 +58,8 @@ unet-diffusion-ocr/
 ├── .gitignore
 │
 ├── docs/
-│   └── contracts.md           # umowa styków + tabela kontrakt→test→status
+│   ├── contracts.md           # umowa styków + tabela kontrakt→test→status
+│   └── d0_grid.md             # wpis bramki D0: siatka 200 próbek + sha manifestu
 │
 ├── configs/
 │   ├── detect.yaml            # hiperparametry detektora (S-tor)
@@ -86,6 +89,7 @@ unet-diffusion-ocr/
 ├── train_unet.py              # trening dyfuzora: ε-prediction, MSE, EMA (D1)
 ├── evaluate.py                # ΔCER + mapa 2D (t_degr, t0) — D3
 ├── infer.py                   # skan → lista naprawionych linii (PNG per linia)
+├── make_d0_grid.py            # bramka D0: siatka 200 próbek G → runs/d0_grid/ (manifest JSONL + sha256)
 │
 ├── runs/                      # logi TensorBoard (IGNOROWANE)
 ├── checkpoints/               # modele (IGNOROWANE): detect/, diffusion/
