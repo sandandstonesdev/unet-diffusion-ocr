@@ -53,15 +53,20 @@ indeks. Pomylenie tych dwóch to klasyczny bug dyfuzora — testowane w
 - TODO (D1): `w_bucket` — bucketing po szerokości dla batchy treningowych
   (padding dopiero w collate CRNN, nie tutaj).
 
-## 5. Degradacje (`data/degrade.py`) — kontrakt, implementacja: D0
+## 5. Degradacje (`data/degrade.py`) — zaimplementowane
 
-- `degrade_g(x0[0,1], t_frac, schedule, seed) -> (1,32,W) [0,1]`:
+- `degrade_g(x0[0,1], t_frac, schedule, seed, noise=None) -> (1,32,W) [0,1]`:
   wewnątrz [-1,1] → `q_sample` → powrót z clamp; W bez zmian; ten sam seed →
-  bajtowo identyczny wynik,
+  bajtowo identyczny wynik. `t_frac`: float albo (B,) per linia; `noise`:
+  opcjonalne ε z zewnątrz (parowanie (x_t, ε) w treningu D1), None → losowane
+  z `Generator(seed)`; zamiana t_frac→indeks wyłącznie przez `t_frac_to_idx`,
 - `degrade_r(x0, kind, seed)`: `kind ∈ RKind` (Literal: blur_gauss, blur_motion,
   noise_gauss, salt_pepper, bleed_through, jpeg, contrast); operacje na [0,1],
   W bez zmian, **tło ≠ atramentu nie rozlewa się** (kontrast dotyka tylko
-  atramentu).
+  atramentu); siła degradacji losowana z `Generator(seed)` — determinizm,
+- bramka D0 (`make_d0_grid.py`): 20 linii val × 10 poziomów `t_frac` = 200
+  próbek → `runs/d0_grid/` (PNG + manifest JSONL z sha256); wpis bramki:
+  `docs/d0_grid.md`.
 
 ## 6. Mostek S → D (`pipeline/`) — kontrakt, implementacja: S0–S2 / D2
 
@@ -96,7 +101,8 @@ indeks. Pomylenie tych dwóch to klasyczny bug dyfuzora — testowane w
 | `q_sample`: determinizm z generatorem | `test_schedule.py::test_q_sample_determinism_with_seed` | gotowy |
 | loader: kształt/dtype/zakres/sortowanie/wzór resize | `test_line_dataset.py` (wszystkie) | gotowy |
 | styk dataset→dyfuzor spełnia sekcję 1 | `test_contracts.py::test_styk_dataset_dyfuzor` | gotowy |
-| flow end-to-end (mock, 1 krok treningu) | `test_smoke.py::test_flow_smoke` | gotowy — rośnie z pipeline: D1 realny model, D2 restore, S2 dewarp |
-| degrade_g: [0,1], W, determinizm | `test_contracts.py::test_degrade_g_contract` | skip → D0 |
+| flow end-to-end (mock, 1 krok treningu) | `test_smoke.py::test_flow_smoke` | gotowy — rośnie z pipeline: D0 degrade_g wpięty, D1 realny model, D2 restore, S2 dewarp |
+| degrade_g: [0,1], W, determinizm | `test_contracts.py::test_degrade_g_contract` | gotowy |
+| degrade_r: [0,1], W, determinizm, kontrast tylko atrament | `test_contracts.py::test_degrade_r_contract` | gotowy |
 | dewarp: właściciel konwencji [0,1]/H=32 | `test_contracts.py::test_dewarp_contract` | skip → S2 |
 | restore: przelotowość geometrii | `test_contracts.py::test_restore_passthrough_contract` | skip → D2 |

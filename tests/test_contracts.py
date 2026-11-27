@@ -23,7 +23,6 @@ def test_styk_dataset_dyfuzor(tmp_path):
     assert 0.0 <= float(x.min()) <= float(x.max()) <= 1.0      # zakres [0,1]
 
 
-@pytest.mark.skip(reason="D0: degrade_g — implementacja w data/degrade.py")
 def test_degrade_g_contract():
     from configs.schedule import cosine_schedule
     from data.degrade import degrade_g
@@ -35,6 +34,29 @@ def test_degrade_g_contract():
     # determinizm: ten sam seed -> bajtowo identyczny wynik
     again = degrade_g(x0, t_frac=0.5, schedule=cosine_schedule(300), seed=7)
     assert torch.equal(out, again)
+    # kształt jak z loadera ((1,32,W), bez osi batcha) też przechodzi
+    line = torch.rand(1, 32, 96)
+    out3 = degrade_g(line, t_frac=0.3, schedule=cosine_schedule(300), seed=1)
+    assert out3.shape == line.shape
+    assert 0.0 <= float(out3.min()) <= float(out3.max()) <= 1.0
+
+
+def test_degrade_r_contract():
+    from typing import get_args
+
+    from data.degrade import RKind, degrade_r
+
+    x0 = torch.rand(1, 1, 32, 128)
+    for kind in get_args(RKind):
+        out = degrade_r(x0, kind, seed=7)
+        assert out.shape == x0.shape                            # W niezmienna
+        assert 0.0 <= float(out.min()) <= float(out.max()) <= 1.0
+        assert torch.equal(out, degrade_r(x0, kind, seed=7))    # determinizm
+    # kontrast dotyka tylko atramentu: czyste tło (1.0) zostaje dokładnie 1.0
+    page = torch.ones(1, 1, 32, 128)
+    page[..., 8:24] = 0.2                                       # "atrament"
+    out = degrade_r(page, "contrast", seed=7)
+    assert torch.all(out[page >= 1.0] == 1.0)
 
 
 @pytest.mark.skip(reason="D2: restore — implementacja w pipeline/restore.py")
